@@ -4,7 +4,7 @@ const app = express()
 
 
 app.use(async (req, res, next) => {
-  const response = await axios.post(
+  const response = app.get('token') || await axios.post(
     'https://id.twitch.tv/oauth2/token?',
     {},
     {
@@ -17,26 +17,12 @@ app.use(async (req, res, next) => {
   ).catch(error => {
     console.log(error);
   })
-  const token = response.data.access_token
+  app.set('token', response.data.access_token)
   next();
 })
 
 app.get('/', async function(req, res) {
-  console.log("home");
-  const response = await axios.post(
-    'https://id.twitch.tv/oauth2/token?',
-    {},
-    {
-      params: {
-        client_id: '47t4devxqry4861taxoikjrl7mvpl2',
-        client_secret: 'v9pq35ee8oqw4os4hxwyf0ivqe3b55',
-        grant_type: 'client_credentials'
-      }
-    }
-  ).catch(error => {
-    console.log(error);
-  })
-  const token = response.data.access_token
+  const token = app.get('token')
 
   const users = await axios.get(
     'https://api.twitch.tv/helix/users',
